@@ -30,7 +30,7 @@ class DynRT(torch.nn.Module):
         self.sigm = torch.nn.Sigmoid()
         self.classifier = torch.nn.Sequential(
             torch.nn.Dropout(0.5),
-            torch.nn.Linear(opt["output_size"],2)
+            torch.nn.Linear(opt["output_size"],4) # change 2 to 4
         )
 
     def vit_forward(self,x):
