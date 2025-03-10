@@ -12,7 +12,7 @@ def load_file(filename):
 if __name__ == "__main__":
     
     opt = {
-        'data_path':'input/prepared/',
+        'data_path':'input/prepared_clean/',
         'img_path':'dataset_image/'
     }
     id ={
@@ -55,15 +55,20 @@ if __name__ == "__main__":
         os.makedirs(save_path)
     for mode in id.keys():
         for idx in id[mode]:
+            print(f"Processing {mode} image {idx}")
+            
             img_path=os.path.join(
-                    img_dir,
+                    f"{img_dir}/{mode}-images/",
                     "{}.jpg".format(idx)
                 )
             img = Image.open(img_path)
             img = img.convert('RGB') # convert grey picture
             trainsform_img = transform[mode](img)
             image_tensor[mode].append(trainsform_img.unsqueeze(0))
-            np.save(save_path + str(idx) + '.npy', trainsform_img.numpy())
+            np.save(f"{save_path}/{mode}-images/" + str(idx) + '.npy', trainsform_img.numpy())
+
+            print("Done")
+    print("Saving image tensor")
             
 
 
