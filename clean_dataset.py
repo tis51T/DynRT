@@ -17,7 +17,7 @@ if __name__ == '__main__':
     valid_id = load_file('input/prepared/valid_id')
     valid_text = load_file('input/prepared/valid_text')
     valid_labels = load_file('input/prepared/valid_labels')
- 
+
     train_id = load_file('input/prepared/train_id')
     train_text = load_file('input/prepared/train_text')
     train_labels = load_file('input/prepared/train_labels')
