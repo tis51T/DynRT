@@ -357,7 +357,7 @@ def getImgMasks(scale=16, order=2):
             mask = np.reshape(mask, [_scale * _scale])
             masks.append(mask)
     masks = np.array(masks)
-    masks = np.asarray(masks, dtype=np.bool) # 0, 1 -> False True (True mask)
+    masks = np.asarray(masks, dtype=np.bool_) # 0, 1 -> False True (True mask)
     return masks
 
 def getMasks_img_multimodal(x_mask, __C):
