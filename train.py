@@ -87,7 +87,7 @@ class onerun:
                     tb_logger.log_value('f1_test', test["f1_score"], step=epoch)
                     tb_logger.log_value('acc_test', test["accuracy"], step=epoch)
                     tb_logger.log_value('loss_test', test["loss"], step=epoch)
-                    if test["f1_score"] > 0.9388:
+                    if test["f1_score"] >= 0.2:
                         self.log.info("save test_best_model for now, epoch:" + str(epoch))
                     # self.save_pred_result(test["y_pred"])
                 else:
