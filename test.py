@@ -149,11 +149,11 @@ class onerun:
         print(f'Trainable params: {Trainable_params}')
         print(f'Non-trainable params: {NonTrainable_params}')
 
-    def train(self,epoch):
+    def train(self, epoch):
         self.model.train()
         self.log.info('Epoch {}/{}'.format(epoch, self.total_epoch))
         running_loss = 0.0
-        running_corrects = 0.0
+        running_corrects = 0
 
         y_true = []
         y_pred = []
@@ -161,53 +161,60 @@ class onerun:
         self.model.zero_grad()
         
         for i, batch in enumerate(self.dataloaders["train"]):
-                
-            input={}
-            for key in batch:
-                input[key]=batch[key].to(self.device)
+            input = {key: batch[key].to(self.device) for key in batch}
             
             scores, lang_feat, img_feat = self.model(input)
-
             loss = self.loss(scores, input["label"], lang_feat, img_feat)
             
             loss.backward()
-
             torch.nn.utils.clip_grad_norm_(self.model.parameters(), self.clip)
             self.optimizer.step()
             self.model.zero_grad()
+
             running_loss += loss.item() * input["label"].size(0)
-            
+
             _, preds = scores.data.max(1)
-            running_corrects += (preds == input["label"]).sum()
+            running_corrects += (preds == input["label"]).sum().item()
             y_pred.extend(preds.tolist())
             y_true.extend(input["label"].tolist())
 
             del input, scores, lang_feat, img_feat
+
         self.model.zero_grad()
 
         epoch_loss = running_loss / (len(self.dataloaders["train"]) * self.batch_size)
-        epoch_acc = accuracy_score(y_true, y_pred)
-        conf=confusion_matrix(y_true, y_pred)
-        pre = precision_score(y_true, y_pred, average="macro")
-        recall = recall_score(y_true, y_pred, average="macro")
-        f1 = f1_score(y_true, y_pred, average="macro")
+        epoch_acc = running_corrects / (len(y_true))
+
+        conf = confusion_matrix(y_true, y_pred)
+        pre_macro = precision_score(y_true, y_pred, average="macro", zero_division=0)
+        recall_macro = recall_score(y_true, y_pred, average="macro", zero_division=0)
+        f1_macro = f1_score(y_true, y_pred, average="macro", zero_division=0)
+        
+        pre_weighted = precision_score(y_true, y_pred, average="weighted", zero_division=0)
+        recall_weighted = recall_score(y_true, y_pred, average="weighted", zero_division=0)
+        f1_weighted = f1_score(y_true, y_pred, average="weighted", zero_division=0)
+
         self.log.info(conf)
+        self.log.info("Train - Macro: F1: {:.4f}, Precision: {:.4f}, Recall : {:.4f}".format(f1_macro, pre_macro, recall_macro))
+        self.log.info("Train - Weighted: F1: {:.4f}, Precision: {:.4f}, Recall : {:.4f}, Accuracy: {:.4f}, Loss: {:.4f}".format(f1_weighted, pre_weighted, recall_weighted, epoch_acc, epoch_loss))
 
-
-        self.log.info("train : F1: {:.4f}, Precision: {:.4f}, Recall : {:.4f}, Accuracy: {:.4f}, Loss: {:.4f}.".format(f1, pre, recall, epoch_acc, epoch_loss))
         return {
-            "confusion_matrix":conf.tolist(),
-            "f1_score":f1.item(),
-            "precision_score":pre.item(),
-            "recall_score":recall.item(),
-            "loss":epoch_loss,
-            "accuracy":epoch_acc
+            "confusion_matrix": conf.tolist(),
+            "f1_score_macro": f1_macro,
+            "precision_score_macro": pre_macro,
+            "recall_score_macro": recall_macro,
+            "f1_score_weighted": f1_weighted,
+            "precision_score_weighted": pre_weighted,
+            "recall_score_weighted": recall_weighted,
+            "loss": epoch_loss,
+            "accuracy": epoch_acc
         }
 
-    def eval(self,mode, epoch=None):
+
+    def eval(self, mode, epoch=None):
         self.model.eval()
         running_loss = 0.0
-        running_corrects = 0.0
+        running_corrects = 0
 
         y_true = []
         y_pred = []
@@ -215,85 +222,75 @@ class onerun:
 
         with torch.no_grad():
             for i, batch in enumerate(self.dataloaders[mode]):
+                input = {key: batch[key].to(self.device) for key in batch}
                 
-                input={}
-                for key in batch:
-                    input[key]=batch[key].to(self.device)
                 scores, lang_feat, img_feat = self.model(input)
-
                 loss = self.loss(scores, input["label"], lang_feat, img_feat)
                 
                 running_loss += loss.item() * input["label"].size(0)
                 
                 _, preds = scores.data.max(1)
 
-                running_corrects += (preds == input["label"]).sum()
+                running_corrects += (preds == input["label"]).sum().item()
                 y_pred.extend(preds.tolist())
                 scores_list.extend(_.tolist())
                 y_true.extend(input["label"].tolist())
 
-                del input, scores
+                del input, scores, lang_feat, img_feat
 
         epoch_loss = running_loss / (len(self.dataloaders[mode]) * self.batch_size)
+        epoch_acc = running_corrects / (len(y_true))
 
-        epoch_acc = accuracy_score(y_true, y_pred)
+        conf = confusion_matrix(y_true, y_pred)
+        pre_macro = precision_score(y_true, y_pred, average="macro", zero_division=0)
+        recall_macro = recall_score(y_true, y_pred, average="macro", zero_division=0)
+        f1_macro = f1_score(y_true, y_pred, average="macro", zero_division=0)
         
-        conf=confusion_matrix(y_true, y_pred)
-        pre_macro = precision_score(y_true, y_pred, average="macro")
-        recall_macro = recall_score(y_true, y_pred, average="macro")
-        f1_macro = f1_score(y_true, y_pred, average="macro")
-        pre = precision_score(y_true, y_pred)
-        recall = recall_score(y_true, y_pred)
-        f1 = f1_score(y_true, y_pred)
+        pre_weighted = precision_score(y_true, y_pred, average="weighted", zero_division=0)
+        recall_weighted = recall_score(y_true, y_pred, average="weighted", zero_division=0)
+        f1_weighted = f1_score(y_true, y_pred, average="weighted", zero_division=0)
+
         self.log.info(conf)
         
-        # save predict 
         if epoch:
             np.savez(self.predict_save_path[:-4] + str(epoch) +'.npy', y_pred=np.array(y_pred), y_true=np.array(y_true), score=np.array(scores_list))
             np.save(self.predict_save_score_path[:-4] + str(epoch) +'.npy', np.array(scores_list))
-        
-        if "pth.tar" in self.info["test_on_checkpoint"]:
-            print(mode+": F1: {:.4f}, Precision: {:.4f}, Recall : {:.4f}, Accuracy: {:.4f}, Loss: {:.4f}.".format(f1, pre, recall, epoch_acc, epoch_loss))
-            print(mode+"-macro: F1: {:.4f}, Precision: {:.4f}, Recall : {:.4f}.".format(f1_macro, pre_macro, recall_macro))
-            self.log.info(mode+": F1: {:.4f}, Precision: {:.4f}, Recall : {:.4f}, Accuracy: {:.4f}, Loss: {:.4f}.".format(f1, pre, recall, epoch_acc, epoch_loss))
-            return y_true, y_pred
 
-        self.log.info(mode+": F1: {:.4f}, Precision: {:.4f}, Recall : {:.4f}, Accuracy: {:.4f}, Loss: {:.4f}.".format(f1, pre, recall, epoch_acc, epoch_loss))
-        self.log.info(mode+"-macro: F1: {:.4f}, Precision: {:.4f}, Recall : {:.4f}.".format(f1_macro, pre_macro, recall_macro))
+        self.log.info(mode + "- Macro: F1: {:.4f}, Precision: {:.4f}, Recall : {:.4f}".format(f1_macro, pre_macro, recall_macro))
+        self.log.info(mode + "- Weighted: F1: {:.4f}, Precision: {:.4f}, Recall : {:.4f}, Accuracy: {:.4f}, Loss: {:.4f}".format(f1_weighted, pre_weighted, recall_weighted, epoch_acc, epoch_loss))
+
         return {
-            "confusion_matrix":conf.tolist(),
-            "f1_score":f1.item(),
-            "precision_score":pre.item(),
-            "recall_score":recall.item(),
-            "loss":epoch_loss,
-            "accuracy":epoch_acc,
-            "y_pred":y_pred
-
+            "confusion_matrix": conf.tolist(),
+            "f1_score_macro": f1_macro,
+            "precision_score_macro": pre_macro,
+            "recall_score_macro": recall_macro,
+            "f1_score_weighted": f1_weighted,
+            "precision_score_weighted": pre_weighted,
+            "recall_score_weighted": recall_weighted,
+            "loss": epoch_loss,
+            "accuracy": epoch_acc,
+            "y_pred": y_pred
         }
-    
-    
 
-    def eval_test(self,mode):
+
+    def eval_test(self, mode):
         self.model.eval()
-
         y_pred = []
+
         with torch.no_grad():
             for i, batch in enumerate(self.dataloaders[mode]):
+                input = {key: batch[key].to(self.device) for key in batch}
                 
-                input={}
-                for key in batch:
-                    input[key]=batch[key].to(self.device)
-                    
-                scores, lang_feat, img_feat = self.model(input)
-
+                scores, _, _ = self.model(input)
                 _, preds = scores.data.max(1)
                 y_pred.extend(preds.tolist())
 
                 del input, scores
 
         return y_pred
+
     
-  
+
 
     def Init(self):
         self.InitRandom()
