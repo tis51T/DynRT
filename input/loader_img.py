@@ -23,7 +23,7 @@ class loader_img:
 
     def get(self,result,mode,index):
         img_path=os.path.join(
-                self.transform_image_path,
+                f"{self.transform_image_path}/{mode}-images/",
                 "{}.npy".format(self.id[mode][index])
             )
         img = torch.from_numpy(np.load(img_path))
