@@ -196,9 +196,9 @@ class onerun:
         self.log.info("train : F1: {:.4f}, Precision: {:.4f}, Recall : {:.4f}, Accuracy: {:.4f}, Loss: {:.4f}.".format(f1, pre, recall, epoch_acc, epoch_loss))
         return {
             "confusion_matrix":conf.tolist(),
-            "f1_score":f1.item(),
-            "precision_score":pre.item(),
-            "recall_score":recall.item(),
+            "f1_score":f1,
+            "precision_score":pre,
+            "recall_score":recall,
             "loss":epoch_loss,
             "accuracy":epoch_acc
         }
