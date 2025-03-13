@@ -33,7 +33,7 @@
                     "test_label": true
                 }
             },
-            "batch_size": 32,
+            "batch_size": 64,
             "pin_memory": true,
             "num_workers": 0,
             "shuffle": true
@@ -98,7 +98,7 @@
         "lossopt": {
             "name": "CrossEntropyLoss"
         },
-        "total_epoch": 15,
+        "total_epoch": 5,
         "clip": 10
     }
 }

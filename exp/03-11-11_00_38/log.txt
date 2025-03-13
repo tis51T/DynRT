@@ -1,0 +1,13 @@
+2025-03-11 11:00:38,703 - __main__ - INFO - start logging : {"fname": "./exp/03-11-11_00_38/log.txt", "level": "INFO", "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s"}
+2025-03-11 11:00:38,703 - __main__ - INFO - info: {"name": "DynRT", "log": {"name": ""}, "device": [0], "test_on_checkpoint": "none", "train_on_checkpoint": "none"}
+2025-03-11 11:00:38,710 - __main__ - INFO - Set Seed : 2
+2025-03-11 11:00:38,711 - __main__ - INFO - Require : ['tokenizer_roberta']
+2025-03-11 11:00:38,904 - __main__ - INFO - Loaded tokenizer_roberta : {"path": "roberta-base/"}
+2025-03-11 11:00:45,011 - __main__ - INFO - Prepared text : {"data_path": "input/prepared_clean/", "len": 100, "pad": 1}
+2025-03-11 11:00:45,052 - __main__ - INFO - Prepared img : {"data_path": "input/prepared_clean/", "transform_image": "image_tensor/"}
+2025-03-11 11:00:45,082 - __main__ - INFO - Prepared label : {"data_path": "input/prepared_clean/", "test_label": true}
+2025-03-11 11:00:45,085 - __main__ - INFO - Created DataLoaders : {"batch_size": 32, "pin_memory": true, "num_workers": 0, "shuffle": true}
+2025-03-11 11:01:23,240 - __main__ - INFO - load model none
+2025-03-11 11:01:23,240 - __main__ - INFO - Created Model : {"name": "DynRT", "input1": "text", "input2": "img", "input3": "text_mask", "layer": 4, "tau_max": 10, "ORDERS": [0, 1, 2, 3], "IMG_SCALE": 7, "dropout": 0.5, "hidden_size": 768, "ffn_size": 768, "multihead": 2, "routing": "hard", "BINARIZE": false, "len": 100, "glimpses": 1, "mlp_size": 768, "output_size": 768, "orders": 4, "pooling": "avg", "classifier": "both", "roberta_path": "roberta-base/", "roberta_layer": 1, "vitmodel": "vit_base_patch32_224", "finetune": false}
+2025-03-11 11:01:23,247 - __main__ - INFO - Created Optimizer : {"name": "Adam", "lr": 1e-06, "weight_decay": 0.01, "params": {"bertl_text": {"lr": 3e-07}, "vit": {"lr": 3e-07, "weight_decay": 0.01}, "trar": {"lr": 1e-06, "weight_decay": 0.01}, "classifier": {}}}
+2025-03-11 11:01:23,247 - __main__ - INFO - Created Loss : {"name": "CrossEntropyLoss"}
