@@ -163,7 +163,7 @@ class onerun:
                 
             input={}
             for key in batch:
-                input[key]=batch[key].to(self.device)
+                input[key]=torch.tensor(batch[key]).to(self.device)
             
             scores, lang_feat, img_feat = self.model(input)
 
@@ -217,7 +217,7 @@ class onerun:
                 
                 input={}
                 for key in batch:
-                    input[key]=batch[key].to(self.device)
+                    input[key]=torch.tensor(batch[key]).to(self.device)
                 scores, lang_feat, img_feat = self.model(input)
 
                 loss = self.loss(scores, input["label"], lang_feat, img_feat)
@@ -280,7 +280,7 @@ class onerun:
                 
                 input={}
                 for key in batch:
-                    input[key]=batch[key].to(self.device)
+                    input[key]=torch.tensor(batch[key]).to(self.device)
                     
                 scores, lang_feat, img_feat = self.model(input)
 
