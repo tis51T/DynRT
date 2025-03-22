@@ -150,9 +150,9 @@ class onerun:
 
     def train(self, epoch):
         self.model.train()
-        self.log.info('Epoch {}/{}'.format(epoch, self.total_epoch))
+        self.log.info(f'Epoch {epoch}/{self.total_epoch}')
         running_loss = 0.0
-        running_corrects = 0.0
+        running_corrects = 0
 
         y_true = []
         y_pred = []
@@ -160,7 +160,13 @@ class onerun:
         self.model.zero_grad()
 
         for i, batch in enumerate(self.dataloaders["train"]):
-            input = {key: torch.tensor(batch[key]).to(self.device) for key in batch}
+            # Kiểm tra dữ liệu trước khi chuyển đổi
+            input = {
+                key: torch.tensor(batch[key]).to(self.device) 
+                if isinstance(batch[key], list) and all(isinstance(x, (int, float)) for x in batch[key])  
+                else batch[key].to(self.device)
+                for key in batch
+            }
 
             scores, lang_feat, img_feat = self.model(input)
             loss = self.loss(scores, input["label"], lang_feat, img_feat)
@@ -170,8 +176,10 @@ class onerun:
             self.optimizer.step()
             self.model.zero_grad()
 
+            # Tính loss
             running_loss += loss.item() * input["label"].size(0)
 
+            # Dự đoán nhãn
             _, preds = scores.data.max(1)
             running_corrects += (preds == input["label"]).sum().item()
 
@@ -182,8 +190,8 @@ class onerun:
 
         self.model.zero_grad()
 
-        epoch_loss = running_loss / (len(self.dataloaders["train"]) * self.batch_size)
-        epoch_acc = accuracy_score(y_true, y_pred)
+        epoch_loss = running_loss / len(self.dataloaders["train"].dataset)
+        epoch_acc = running_corrects / len(self.dataloaders["train"].dataset)
 
         conf = confusion_matrix(y_true, y_pred)
         pre = precision_score(y_true, y_pred, average="macro", zero_division=1)
@@ -191,7 +199,7 @@ class onerun:
         f1 = f1_score(y_true, y_pred, average="macro", zero_division=1)
 
         self.log.info(conf)
-        self.log.info("train : F1: {:.4f}, Precision: {:.4f}, Recall : {:.4f}, Accuracy: {:.4f}, Loss: {:.4f}.".format(f1, pre, recall, epoch_acc, epoch_loss))
+        self.log.info(f"Train: F1: {f1:.4f}, Precision: {pre:.4f}, Recall: {recall:.4f}, Accuracy: {epoch_acc:.4f}, Loss: {epoch_loss:.4f}")
 
         return {
             "confusion_matrix": conf.tolist(),
@@ -206,7 +214,7 @@ class onerun:
     def eval(self, mode, epoch=None):
         self.model.eval()
         running_loss = 0.0
-        running_corrects = 0.0
+        running_corrects = 0
 
         y_true = []
         y_pred = []
@@ -214,7 +222,13 @@ class onerun:
 
         with torch.no_grad():
             for i, batch in enumerate(self.dataloaders[mode]):
-                input = {key: batch[key].to(self.device) for key in batch}
+                # Kiểm tra kiểu dữ liệu trước khi chuyển thành Tensor
+                input = {
+                    key: torch.tensor(batch[key]).to(self.device) 
+                    if isinstance(batch[key], list) and all(isinstance(x, (int, float)) for x in batch[key])
+                    else batch[key].to(self.device)
+                    for key in batch
+                }
 
                 scores, lang_feat, img_feat = self.model(input)
                 loss = self.loss(scores, input["label"], lang_feat, img_feat)
@@ -224,62 +238,63 @@ class onerun:
 
                 running_corrects += (preds == input["label"]).sum().item()
                 y_pred.extend(preds.cpu().tolist())
-                scores_list.extend(_.cpu().tolist())
+                scores_list.extend(scores.cpu().tolist())  # Sửa lỗi lưu danh sách điểm số
                 y_true.extend(input["label"].cpu().tolist())
 
-                del input, scores
+                del input, scores, lang_feat, img_feat  # Giải phóng bộ nhớ
 
-        epoch_loss = running_loss / (len(self.dataloaders[mode]) * self.batch_size)
-        epoch_acc = accuracy_score(y_true, y_pred)
+        # Tính toán loss và accuracy
+        epoch_loss = running_loss / len(self.dataloaders[mode].dataset)
+        epoch_acc = running_corrects / len(self.dataloaders[mode].dataset)
 
+        # Tính toán các metrics
         conf = confusion_matrix(y_true, y_pred)
-        pre_macro = precision_score(y_true, y_pred, average="macro", zero_division=1)
-        recall_macro = recall_score(y_true, y_pred, average="macro", zero_division=1)
-        f1_macro = f1_score(y_true, y_pred, average="macro", zero_division=1)
-
-        pre = precision_score(y_true, y_pred, average="macro", zero_division=1)
+        precision = precision_score(y_true, y_pred, average="macro", zero_division=1)
         recall = recall_score(y_true, y_pred, average="macro", zero_division=1)
         f1 = f1_score(y_true, y_pred, average="macro", zero_division=1)
 
+        # Lưu kết quả dự đoán nếu cần
+        if epoch is not None:
+            np.savez(f"{self.predict_save_path[:-4]}_{epoch}.npz", y_pred=np.array(y_pred), y_true=np.array(y_true), score=np.array(scores_list))
+            np.save(f"{self.predict_save_score_path[:-4]}_{epoch}.npy", np.array(scores_list))
+
+        # Log kết quả
         self.log.info(conf)
-
-        if epoch:
-            np.savez(self.predict_save_path[:-4] + str(epoch) + '.npz', y_pred=np.array(y_pred), y_true=np.array(y_true), score=np.array(scores_list))
-            np.save(self.predict_save_score_path[:-4] + str(epoch) + '.npy', np.array(scores_list))
-
-        self.log.info(mode + ": F1: {:.4f}, Precision: {:.4f}, Recall : {:.4f}, Accuracy: {:.4f}, Loss: {:.4f}.".format(f1, pre, recall, epoch_acc, epoch_loss))
-        self.log.info(mode + "-macro: F1: {:.4f}, Precision: {:.4f}, Recall : {:.4f}.".format(f1_macro, pre_macro, recall_macro))
+        self.log.info(f"{mode}: F1: {f1:.4f}, Precision: {precision:.4f}, Recall: {recall:.4f}, Accuracy: {epoch_acc:.4f}, Loss: {epoch_loss:.4f}")
 
         return {
             "confusion_matrix": conf.tolist(),
             "f1_score": f1,
-            "precision_score": pre,
+            "precision_score": precision,
             "recall_score": recall,
             "loss": epoch_loss,
             "accuracy": epoch_acc,
             "y_pred": y_pred
         }
     
-    
 
-    def eval_test(self,mode):
+    def eval_test(self, mode):
         self.model.eval()
-
+        
         y_pred = []
+        
         with torch.no_grad():
             for i, batch in enumerate(self.dataloaders[mode]):
+                # Kiểm tra và chuyển dữ liệu thành tensor nếu cần
+                input = {
+                    key: torch.tensor(batch[key]).to(self.device)
+                    if isinstance(batch[key], list) and all(isinstance(x, (int, float)) for x in batch[key])
+                    else batch[key].to(self.device)
+                    for key in batch
+                }
                 
-                input={}
-                for key in batch:
-                    input[key]=batch[key].to(self.device)
-                    
                 scores, lang_feat, img_feat = self.model(input)
 
                 _, preds = scores.data.max(1)
-                y_pred.extend(preds.tolist())
+                y_pred.extend(preds.cpu().tolist())  # Đưa về CPU trước khi lưu
 
-                del input, scores
-
+                del input, scores, lang_feat, img_feat  # Giải phóng bộ nhớ
+        
         return y_pred
     
 
