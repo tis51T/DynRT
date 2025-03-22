@@ -19,7 +19,7 @@ class loader_img:
             "test":load_file(opt["data_path"] + "test_id"),
             "valid":load_file(opt["data_path"] + "valid_id")
         }
-        self.transform_image_path = opt["image_tensor"]
+        self.transform_image_path = opt["transform_image"]
 
     def get(self,result,mode,index):
         img_path=os.path.join(
