@@ -160,7 +160,7 @@ class onerun:
         self.model.zero_grad()
 
         for i, batch in enumerate(self.dataloaders["train"]):
-            input = {key: batch[key].to(self.device) for key in batch}
+            input = {key: torch.tensor(batch[key]).to(self.device) for key in batch}
 
             scores, lang_feat, img_feat = self.model(input)
             loss = self.loss(scores, input["label"], lang_feat, img_feat)
