@@ -9,11 +9,12 @@ def load_file(filename):
     with open(filename, 'rb') as filehandle:
         ret = pickle.load(filehandle)
         return ret
+    
 if __name__ == "__main__":
     
     opt = {
         'data_path':'input/prepared_clean/',
-        'img_path':'dataset_image/'
+        'img_path':'images/'
     }
     id ={
         "train":load_file(opt["data_path"] + "train_id"),
@@ -50,7 +51,7 @@ if __name__ == "__main__":
         "valid": [],
         "test": []
     }
-    save_path = 'image_tensor/'
+    save_path = 'image_tensor'
     if not os.path.exists(save_path):
         os.makedirs(save_path)
     for mode in id.keys():
@@ -65,7 +66,7 @@ if __name__ == "__main__":
             img = img.convert('RGB') # convert grey picture
             trainsform_img = transform[mode](img)
             image_tensor[mode].append(trainsform_img.unsqueeze(0))
-            np.save(f"{save_path}/{mode}-images/" + str(idx) + '.npy', trainsform_img.numpy())
+            np.save(f"./{save_path}/{mode}-images/" + str(idx) + '.npy', trainsform_img.numpy())
 
             print("Done")
     print("Saving image tensor")
