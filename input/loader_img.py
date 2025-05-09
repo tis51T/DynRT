@@ -32,3 +32,5 @@ class loader_img:
 
     def getlength(self,mode):
         return len(self.id[mode])
+
+
