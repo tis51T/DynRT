@@ -88,12 +88,15 @@ class onerun:
                     tb_logger.log_value('f1_test', test["f1_score"], step=epoch)
                     tb_logger.log_value('acc_test', test["accuracy"], step=epoch)
                     tb_logger.log_value('loss_test', test["loss"], step=epoch)
-                    if test["f1_score"] > 0.9388:
+                    if test["f1_score"] >= 0.13:
                         self.log.info("save test_best_model for now, epoch:" + str(epoch))
-                    # self.save_pred_result(test["y_pred"])
+                    print("Going to save results")
+                    pred = test["y_pred"]
                 else:
                     pred=self.eval_test("test")
-                    self.save_pred_result(pred)
+                    
+
+            self.save_pred_result(pred)
                 
             if epoch % self.opt['checkpoint_step'] == 0:
                 if len(self.device_ids) > 1:
@@ -117,9 +120,12 @@ class onerun:
             json.dump(f_json, result_file)
 
     def save_pred_result(self, pred):
-        test_name = load_file(self.opt["dataloader"]["loaders"]["text"]["data_path"] + "test_name")
-        predictions_db = pd.DataFrame(data={"img":test_name, "pred":pred})
-        predictions_db.to_csv(self.opt["exp_path"] + 'answer.txt', index=False, sep='\t', header=False)
+        idx = load_file(self.opt["dataloader"]["loaders"]["text"]["data_path"] + "test_id")
+        caption = load_file(self.opt["dataloader"]["loaders"]["text"]["data_path"] + "test_text")
+        predictions_db = pd.DataFrame(data={"img": idx, "caption": caption, "pred":pred})
+        result_path = self.opt["exp_path"] + 'answer.json'
+        print(f"\n Result path: {result_path} \n")
+        predictions_db.T.to_json(result_path)
 
     def save_checkpoint(self, state, filename='checkpoint.pth.tar', prefix=''):
         torch.save(state, prefix + str(state['epoch']) + filename)
@@ -258,7 +264,7 @@ class onerun:
 
         self.log.info(mode + "- Macro: F1: {:.4f}, Precision: {:.4f}, Recall : {:.4f}".format(f1_macro, pre_macro, recall_macro))
         self.log.info(mode + "- Weighted: F1: {:.4f}, Precision: {:.4f}, Recall : {:.4f}, Accuracy: {:.4f}, Loss: {:.4f}".format(f1_weighted, pre_weighted, recall_weighted, epoch_acc, epoch_loss))
-
+        self.save_pred_result(y_pred)
         return {
             "confusion_matrix": conf.tolist(),
             "f1_score_macro": f1_macro,
@@ -286,7 +292,7 @@ class onerun:
                 y_pred.extend(preds.tolist())
 
                 del input, scores
-
+        self.save_pred_result(y_pred)
         return y_pred
 
     
@@ -602,6 +608,7 @@ def main(args):
     assert(os.path.exists(fname) and fname.endswith(".json"))
     OneRun=onerun(fname)
     OneRun.eval('test')
+
 
     
 
