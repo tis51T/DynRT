@@ -543,6 +543,7 @@ class onerun:
         format=opt["format"] if "format" in opt else "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
         self.log=logging.getLogger(__name__)
         self.log.setLevel(level=level)
+        print("Helo", self.opt["name"])
         handler=logging.FileHandler("./exp/"+ self.opt["name"] +'/' + 'log.txt')
         handler.setLevel(level=level)
         handler.setFormatter(logging.Formatter(format))

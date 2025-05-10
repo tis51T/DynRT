@@ -7,7 +7,7 @@
         "device": [
             0
         ],
-        "test_on_checkpoint": "checkpoints/model_best.pth.tar",
+        "test_on_checkpoint": "exp/05-10-00_26_35/checkpoints/model_best.pth.tar",
         "train_on_checkpoint": "none"
     },
     "opt": {
