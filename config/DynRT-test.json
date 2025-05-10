@@ -20,16 +20,16 @@
             },
             "loaders": {
                 "text": {
-                    "data_path": "input/prepared_clean_en/",
+                    "data_path": "input/prepared_clean_vi/",
                     "len": 100,
                     "pad": 1
                 },
                 "img": {
-                    "data_path": "input/prepared_clean_en/",
+                    "data_path": "input/prepared_clean_vi/",
                     "transform_image": "image_tensor/"
                 },
                 "label": {
-                    "data_path": "input/prepared_clean_en/",
+                    "data_path": "input/prepared_clean_vi/",
                     "test_label": true
                 }
             },
