@@ -200,11 +200,13 @@ class onerun:
         recall_weighted = recall_score(y_true, y_pred, average="weighted", zero_division=0)
         f1_weighted = f1_score(y_true, y_pred, average="weighted", zero_division=0)
 
-        classif_report = classification_report(y_true, y_pred, average="weighted", zero_division=0)
+        
 
         self.log.info(conf)
         self.log.info("Train - Macro: F1: {:.4f}, Precision: {:.4f}, Recall : {:.4f}".format(f1_macro, pre_macro, recall_macro))
         self.log.info("Train - Weighted: F1: {:.4f}, Precision: {:.4f}, Recall : {:.4f}, Accuracy: {:.4f}, Loss: {:.4f}".format(f1_weighted, pre_weighted, recall_weighted, epoch_acc, epoch_loss))
+
+        classif_report = classification_report(y_true, y_pred, average="weighted", zero_division=0)
         self.log.info(classif_report)
 
 
@@ -268,6 +270,9 @@ class onerun:
 
         self.log.info(mode + "- Macro: F1: {:.4f}, Precision: {:.4f}, Recall : {:.4f}".format(f1_macro, pre_macro, recall_macro))
         self.log.info(mode + "- Weighted: F1: {:.4f}, Precision: {:.4f}, Recall : {:.4f}, Accuracy: {:.4f}, Loss: {:.4f}".format(f1_weighted, pre_weighted, recall_weighted, epoch_acc, epoch_loss))
+        classif_report = classification_report(y_true, y_pred, average="weighted", zero_division=0)
+        self.log.info(classif_report)
+
         self.save_pred_result(y_pred)
         return {
             "confusion_matrix": conf.tolist(),
