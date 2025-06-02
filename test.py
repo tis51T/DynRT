@@ -11,7 +11,7 @@ import os
 import numpy
 import input
 import model
-from sklearn.metrics import confusion_matrix,f1_score,precision_score,recall_score, accuracy_score
+from sklearn.metrics import confusion_matrix,f1_score,precision_score,recall_score, accuracy_score, classification_report
 import pandas as pd
 import datetime
 import pickle
@@ -200,9 +200,13 @@ class onerun:
         recall_weighted = recall_score(y_true, y_pred, average="weighted", zero_division=0)
         f1_weighted = f1_score(y_true, y_pred, average="weighted", zero_division=0)
 
+        classif_report = classification_report(y_true, y_pred, average="weighted", zero_division=0)
+
         self.log.info(conf)
         self.log.info("Train - Macro: F1: {:.4f}, Precision: {:.4f}, Recall : {:.4f}".format(f1_macro, pre_macro, recall_macro))
         self.log.info("Train - Weighted: F1: {:.4f}, Precision: {:.4f}, Recall : {:.4f}, Accuracy: {:.4f}, Loss: {:.4f}".format(f1_weighted, pre_weighted, recall_weighted, epoch_acc, epoch_loss))
+        self.log.info(classif_report)
+
 
         return {
             "confusion_matrix": conf.tolist(),
