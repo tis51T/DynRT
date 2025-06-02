@@ -190,7 +190,7 @@ class onerun:
         recall = recall_score(y_true, y_pred, average="macro", zero_division=1)
         f1 = f1_score(y_true, y_pred, average="macro", zero_division=1)
 
-        self.log.info(conf)
+        self.log.info('\n',conf)
         self.log.info("train : F1: {:.4f}, Precision: {:.4f}, Recall : {:.4f}, Accuracy: {:.4f}, Loss: {:.4f}.".format(f1, pre, recall, epoch_acc, epoch_loss))
         classif_report = classification_report(y_true, y_pred, average="weighted", zero_division=0)
         self.log.info(classif_report)
@@ -242,7 +242,7 @@ class onerun:
         recall = recall_score(y_true, y_pred, average="macro", zero_division=1)
         f1 = f1_score(y_true, y_pred, average="macro", zero_division=1)
 
-        self.log.info(conf)
+        self.log.info('\n',conf)
 
         if epoch:
             np.savez(self.predict_save_path[:-4] + str(epoch) + '.npz', y_pred=np.array(y_pred), y_true=np.array(y_true), score=np.array(scores_list))

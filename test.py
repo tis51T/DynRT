@@ -202,7 +202,7 @@ class onerun:
 
         
 
-        self.log.info(conf)
+        self.log.info('\n',conf)
         self.log.info("Train - Macro: F1: {:.4f}, Precision: {:.4f}, Recall : {:.4f}".format(f1_macro, pre_macro, recall_macro))
         self.log.info("Train - Weighted: F1: {:.4f}, Precision: {:.4f}, Recall : {:.4f}, Accuracy: {:.4f}, Loss: {:.4f}".format(f1_weighted, pre_weighted, recall_weighted, epoch_acc, epoch_loss))
 
@@ -262,7 +262,7 @@ class onerun:
         recall_weighted = recall_score(y_true, y_pred, average="weighted", zero_division=0)
         f1_weighted = f1_score(y_true, y_pred, average="weighted", zero_division=0)
 
-        self.log.info(conf)
+        self.log.info('\n',conf)
         
         if epoch:
             np.savez(self.predict_save_path[:-4] + str(epoch) +'.npy', y_pred=np.array(y_pred), y_true=np.array(y_true), score=np.array(scores_list))
