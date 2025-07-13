@@ -192,7 +192,7 @@ class onerun:
 
         self.log.info('\n',conf)
         self.log.info("train : F1: {:.4f}, Precision: {:.4f}, Recall : {:.4f}, Accuracy: {:.4f}, Loss: {:.4f}.".format(f1, pre, recall, epoch_acc, epoch_loss))
-        classif_report = classification_report(y_true, y_pred, average="weighted", zero_division=0)
+        classif_report = classification_report(y_true, y_pred, zero_division=0)
         self.log.info(classif_report)
         return {
             "confusion_matrix": conf.tolist(),
@@ -250,7 +250,7 @@ class onerun:
 
         self.log.info(mode + ": F1: {:.4f}, Precision: {:.4f}, Recall : {:.4f}, Accuracy: {:.4f}, Loss: {:.4f}.".format(f1, pre, recall, epoch_acc, epoch_loss))
         self.log.info(mode + "-macro: F1: {:.4f}, Precision: {:.4f}, Recall : {:.4f}.".format(f1_macro, pre_macro, recall_macro))
-        classif_report = classification_report(y_true, y_pred, average="weighted", zero_division=0)
+        classif_report = classification_report(y_true, y_pred, zero_division=0)
         self.log.info(classif_report)
         return {
             "confusion_matrix": conf.tolist(),
